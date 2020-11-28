@@ -23,8 +23,9 @@ public class InventoryActivity extends AppCompatActivity {
     EditText itemName;
     EditText itemWeight;
     EditText itemCost;
-    TextView idNumber;
     TextView title;
+    TextView totalGold;
+    TextView totalWeight;
     ListView inventoryDisplay;
     DatabaseHelper dbHelper;
 
@@ -37,13 +38,17 @@ public class InventoryActivity extends AppCompatActivity {
         Intent intent = getIntent();
 
         final String selectedCharName = intent.getExtras().getString("name");
+
+
+
         //final Integer passedCharID = intent.getExtras().getInt("id");
         //final String selectedCharID = passedCharID.toString();
 
         itemName = findViewById(R.id.itemNameEditText);
         itemWeight = findViewById(R.id.itemWeightEditText);
         itemCost = findViewById(R.id.itemCostEditText);
-        idNumber = findViewById(R.id.idnum);
+        totalGold = findViewById(R.id.goldTrackerAmtDisplay);
+        totalWeight = findViewById(R.id.weightTrackerAmtDisplay);
         inventoryDisplay = findViewById(R.id.inventoryList);
         title = findViewById(R.id.inventoryTitle);
         title.setText(selectedCharName + "'s Inventory");
@@ -91,11 +96,13 @@ public class InventoryActivity extends AppCompatActivity {
 
                 TextView itemView = inventoryDisplay.getChildAt(position).findViewById(R.id.idnum);
                 String deleteItemID = itemView.getText().toString();
+                TextView deletedItem = inventoryDisplay.getChildAt(position).findViewById(R.id.cName);
+                String deletedItemShow = "Deleted " + deletedItem.getText().toString();
 
                 SQLiteDatabase db = dbHelper.getWritableDatabase();
 
                 dbHelper.deleteItem(deleteItemID, db);
-                //Toast.makeText(view.getContext(), deleteItemID, Toast.LENGTH_LONG).show();
+                Toast.makeText(view.getContext(), deletedItemShow, Toast.LENGTH_LONG).show();
                 getCharacterInventory(selectedCharName);
 
                 return true;
@@ -103,6 +110,35 @@ public class InventoryActivity extends AppCompatActivity {
         });
 
         getCharacterInventory(selectedCharName);
+
+
+    }
+
+    private void getTotalCharGold(String charName) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = dbHelper.fetchInventoryData(db, charName);
+        Cursor cursor1 = db.rawQuery("SELECT SUM(ItemCost) FROM inventory WHERE CharacterName = '" + charName + "'", null);
+
+        if(cursor1.moveToFirst()) {
+           totalGold.setText(new String(String.valueOf(cursor1.getInt(0))));
+
+        }
+
+
+
+    }
+
+    private void getTotalCharWeight(String charName) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        Cursor cursor = dbHelper.fetchInventoryData(db, charName);
+        Cursor cursor1 = db.rawQuery("SELECT SUM(ItemWeight) FROM inventory WHERE CharacterName = '" + charName + "'", null);
+
+        if(cursor1.moveToFirst()) {
+            totalWeight.setText(new String(String.valueOf(cursor1.getInt(0))));
+
+        }
+
+
 
     }
 
@@ -117,6 +153,12 @@ public class InventoryActivity extends AppCompatActivity {
                 new int[]{R.id.idnum, R.id.cName, R.id.cWeight, R.id.cCost}, 0);
         inventoryDisplay.setAdapter(myAdapter);
 
+        getTotalCharWeight(charName);
+        getTotalCharGold(charName);
+
+
     }
+
+
 
 }

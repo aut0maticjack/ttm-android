@@ -24,6 +24,8 @@ import java.util.ArrayList;
 
 import edu.cvtc.ttm.tabletopmanager.DatabaseContract.CharactersTable;
 
+import static java.lang.String.valueOf;
+
 public class MainActivity extends AppCompatActivity {
 
     EditText charName;
@@ -96,6 +98,35 @@ public class MainActivity extends AppCompatActivity {
             }
 
         });
+
+        charList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+                //Toast.makeText(view.getContext(), String.valueOf(position), Toast.LENGTH_LONG).show();
+                charList.getChildAt(position).findViewById(R.id.confirmDeleteButton).setVisibility(view.VISIBLE);
+
+                final Button removeCharacterFinal = charList.getChildAt(position).findViewById(R.id.confirmDeleteButton);
+                removeCharacterFinal.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View view) {
+                        TextView charView = charList.getChildAt(position).findViewById(R.id.idnum);
+                        String deleteCharacterName = charView.getText().toString();
+
+                        SQLiteDatabase db = dbHelper.getWritableDatabase();
+
+                        dbHelper.deleteCharacter(deleteCharacterName, db);
+                        Toast.makeText(view.getContext(), deleteCharacterName + " has been deleted.", Toast.LENGTH_LONG).show();
+                        getCharacterData();
+
+                        return true;
+                    }
+                });
+
+                return true;
+            }
+        });
+
+        getCharacterData();
 
         charList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
