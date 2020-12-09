@@ -72,7 +72,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
         return characterNameList;
     }
+/*
 
+    //TODO: This is for a piece of future work that is in limbo, it is commented out for security and clarity
     public  ArrayList<String> getSelectedItem(SQLiteDatabase db) {
         String[] columns = {InventoryTable.COLUMN_INVENTORY_ID, InventoryTable.COLUMN_ITEM_NAME};
         Cursor cursor = db.query(InventoryTable.TABLE, columns, null, null, null, null, null);
@@ -85,6 +87,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
         return itemNameList;
     }
+*/
 
     public Cursor fetchCharacterData(SQLiteDatabase db) {
         String str = "SELECT rowid _id, * FROM characters";
@@ -96,10 +99,62 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.rawQuery(str,null);
     }
 
+
+    public Cursor fetchWeightOfGear(SQLiteDatabase db, String charName) {
+        String str = "SELECT SUM(ItemWeight) FROM inventory WHERE CharacterName = '" + charName + "'";
+        return db.rawQuery(str,null);
+    }
+
+    public Cursor fetchMaxWeight(SQLiteDatabase db, String charName) {
+        String str = "SELECT MaxWeight FROM characters WHERE CharacterName = '" + charName + "'";
+        return db.rawQuery(str,null);
+    }
+
+    public void updateMaxWeight(SQLiteDatabase db, String charName, String newWeight) {
+        String str = "UPDATE characters SET MaxWeight='" + newWeight + "' WHERE CharacterName = '" + charName + "'";
+        db.execSQL(str);
+    }
+
+    //checks to see if a given name is already in the DB or not
+    public boolean compareNewName(SQLiteDatabase db, String charName) {
+        //String str = "SELECT COUNT(CharacterName) FROM characters WHERE CharacterName = '" + charName + "'";
+        String str = "SELECT CharacterName FROM characters WHERE CharacterName = '" + charName + "'";
+        Cursor compare = db.rawQuery(str, null);
+        /*String boolString = compare.getString(1);
+        if (Integer.parseInt(boolString) == 1) {
+            return true;
+        } else {
+            return false;
+        }*/
+
+        if (compare.getCount() == 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public Cursor fetchNetWorth(SQLiteDatabase db, String charName) {
+        String str = "SELECT Gold FROM characters WHERE CharacterName = '" + charName + "'";
+        return db.rawQuery(str,null);
+    }
+
+    public void increaseNetWorth(SQLiteDatabase db, String charName, String gold) {
+        String str = "UPDATE characters SET Gold=Gold + '" + gold + "' WHERE CharacterName = '" + charName + "'";
+        db.execSQL(str);
+    }
+
+    public void decreaseNetWorth(SQLiteDatabase db, String charName, String gold) {
+        String str = "UPDATE characters SET Gold=Gold - '" + gold + "' WHERE CharacterName = '" + charName + "'";
+        db.execSQL(str);
+    }
+
     public static String charactersTableCreateStatement() {
         return "CREATE TABLE " +
                 CharactersTable.TABLE + " ( " +
                 CharactersTable.COLUMN_CHARACTER_ID + " INTEGER PRIMARY KEY NOT NULL, " +
+                CharactersTable.COLUMN_CHARACTER_GOLD + " INTEGER DEFAULT 0, " +
+                CharactersTable.COLUMN_CHARACTER_MAXWEIGHT + " INTEGER DEFAULT 99999, " +
                 CharactersTable.COLUMN_CHARACTER_NAME + " TEXT);";
     }
 
